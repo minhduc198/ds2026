@@ -1,0 +1,104 @@
+
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{TCP File Transfer Protocol Report}
+\author{Your Team}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Protocol Design}
+Our TCP file transfer protocol aims to provide reliable file delivery between a client and a server. The protocol defines message types, connection steps, error handling, retransmission behavior, and file integrity validation. The client initiates the transfer and the server responds with success or failure signals.
+
+\section{System Organization}
+The system consists of two components:
+\begin{itemize}
+    \item \textbf{Server}: Listens for incoming connections and receives files.
+    \item \textbf{Client}: Connects to the server and uploads files.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{system_architecture.png}
+\caption{System Architecture Diagram}
+\end{figure}
+
+\section{Implementation Details}
+Below is the full implementation of the server and client.
+
+\subsection{Server Code}
+\begin{lstlisting}[language=Python]
+# server.py
+import socket
+
+HOST = "127.0.0.1"
+PORT = 65432
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind((HOST, PORT))
+server.listen()
+
+print("Server listening...")
+
+conn, addr = server.accept()
+print(f"Connected by {addr}")
+
+filename = conn.recv(1024).decode()
+conn.sendall(b"Filename received")
+
+with open(filename, "wb") as f:
+    while True:
+        data = conn.recv(4096)
+        if not data:
+            break
+        f.write(data)
+
+print("File received successfully.")
+conn.close()
+server.close()
+\end{lstlisting}
+
+\subsection{Client Code}
+\begin{lstlisting}[language=Python]
+# client.py
+import socket
+
+HOST = "127.0.0.1"
+PORT = 65432
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((HOST, PORT))
+
+filename = "example.txt"
+client.sendall(filename.encode())
+client.recv(1024)
+
+with open(filename, "rb") as f:
+    client.sendall(f.read())
+
+client.close()
+\end{lstlisting}
+
+\section{Who Does What}
+\begin{itemize}
+    \item Member A: Designed the protocol.
+    \item Member B: Implemented the server.
+    \item Member C: Implemented the client.
+    \item Member D: Wrote documentation and testing.
+\end{itemize}
+
+\section{How to Run}
+\begin{enumerate}
+    \item Start the server: \texttt{python3 server.py}
+    \item Run the client: \texttt{python3 client.py}
+    \item Ensure both scripts are in the same directory.
+\end{enumerate}
+
+\end{document}
